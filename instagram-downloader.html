@@ -54,7 +54,7 @@ async function downloadMedia() {
 
         if (data.success) {
             const rawData = data.data;
-            const postCaption = data.caption || "instagram_media"; // ចាប់យកចំណងជើងដែលបានកែច្នៃពី server
+            const postName = data.caption || "instagram_media"; // ឈ្មោះដែលបានស្រង់ចេញពី Link (Shortcode)
             let mediaArray = [];
 
             if (rawData && rawData.media && Array.isArray(rawData.media)) {
@@ -75,8 +75,8 @@ async function downloadMedia() {
                     if (item.video_url) mediaUrl = item.video_url;
 
                     let fileExtension = isVideo ? 'mp4' : 'jpg';
-                    // បង្កើតឈ្មោះឯកសារដោយយក Caption ដើមបូកបន្ថែមជាមួយលេខរៀង
-                    let fileName = `${postCaption}_${index + 1}.${fileExtension}`;
+                    // ដាក់ឈ្មោះតាម Shortcode របស់ Post ជាប់ជាមួយលេខរៀង
+                    let fileName = `${postName}_${index + 1}.${fileExtension}`;
 
                     htmlContent += `
                         <div class="media-card">
