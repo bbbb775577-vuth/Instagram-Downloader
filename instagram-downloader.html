@@ -54,9 +54,9 @@ async function downloadMedia() {
 
         if (data.success) {
             const rawData = data.data;
+            const postCaption = data.caption || "instagram_media"; // ចាប់យកចំណងជើងដែលបានកែច្នៃពី server
             let mediaArray = [];
 
-            // ឆែកមើលរចនាសម្ព័ន្ធទិន្នន័យ (Array of Media)
             if (rawData && rawData.media && Array.isArray(rawData.media)) {
                 mediaArray = rawData.media;
             } else if (Array.isArray(rawData)) {
@@ -75,11 +75,12 @@ async function downloadMedia() {
                     if (item.video_url) mediaUrl = item.video_url;
 
                     let fileExtension = isVideo ? 'mp4' : 'jpg';
-                    let fileName = `instagram_media_${index + 1}.${fileExtension}`;
+                    // បង្កើតឈ្មោះឯកសារដោយយក Caption ដើមបូកបន្ថែមជាមួយលេខរៀង
+                    let fileName = `${postCaption}_${index + 1}.${fileExtension}`;
 
                     htmlContent += `
                         <div class="media-card">
-                            <p style="margin-top:0; font-weight:bold; color:#555;">រូបភាព/វីដេអូ ទី ${index + 1}</p>
+                            <p style="margin-top:0; font-weight:bold; color:#555;">ឯកសារ ទី ${index + 1}</p>
                             ${isVideo ? 
                                 `<video width="100%" controls src="${mediaUrl}"></video>` : 
                                 `<img src="${mediaUrl}" alt="Instagram Image ${index + 1}">`
@@ -106,7 +107,6 @@ async function downloadMedia() {
     }
 }
 
-// មុខងារជួយ Download ចូលម៉ាស៊ីនដោយផ្ទាល់ មិនឱ្យលោតបើក Tab ថ្មី
 async function forceDownload(fileUrl, filename) {
     try {
         const response = await fetch(fileUrl);
@@ -122,7 +122,6 @@ async function forceDownload(fileUrl, filename) {
         
         window.URL.revokeObjectURL(blobUrl);
     } catch (e) {
-        // ករណីជាប់ CORS គឺអនុញ្ញាតឱ្យបើក Tab ថ្មីដើម្បី save ជំនួសវិញ
         window.open(fileUrl, '_blank');
     }
 }
