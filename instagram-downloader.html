@@ -3,45 +3,307 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instagram Video & Image Downloader</title>
+    <title>SaveInstagram - Instagram Downloader</title>
     <style>
-        body { font-family: 'Khmer OS Siemreap', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 650px; text-align: center; }
-        input[type="text"] { width: 80%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; margin-bottom: 15px; }
-        button.main-btn { background: #0095f6; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 6px; cursor: pointer; }
-        button.main-btn:hover { background: #0077cc; }
-        #result { margin-top: 20px; text-align: left; }
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Khmer OS Siemreap', sans-serif; 
+            background: #f0f2f5; 
+            margin: 0; 
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Menu Bar ពណ៌បៃតង */
+        .navbar {
+            background-color: #00b074;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .navbar .logo {
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Menu ធម្មតាសម្រាប់កុំព្យូទ័រ (Desktop) */
+        .navbar .menu-links {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+        .navbar .menu-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 15px;
+            transition: opacity 0.2s;
+        }
+        .navbar .menu-links a:hover {
+            opacity: 0.8;
+        }
+
+        /* លាក់ប៊ូតុងបន្ទាត់បី និង Dropdown ពេលស្ថិតលើកុំព្យូទ័រ */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 26px;
+            height: 20px;
+            padding: 0;
+        }
+        .menu-toggle span {
+            display: block;
+            width: 100%;
+            height: 3px;
+            background-color: white;
+            border-radius: 2px;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            overflow: hidden;
+            width: 220px;
+            z-index: 1000;
+        }
+        .dropdown-menu a {
+            display: block;
+            padding: 12px 20px;
+            color: #333;
+            text-decoration: none;
+            font-size: 14px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .dropdown-menu a:hover {
+            background-color: #f8f9fa;
+            color: #00b074;
+        }
+
+        /* Container ដាក់ប្រអប់ Downloader ឱ្យខិតឡើងលើ */
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 40px;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .container { 
+            background: white; 
+            padding: 40px 30px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+            width: 100%; 
+            max-width: 650px; 
+            text-align: center; 
+        }
+
+        .container h2 {
+            color: #2563eb;
+            margin-bottom: 8px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .container p.sub-text {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        /* Wrapper សម្រាប់ប្រអប់ Input និងប៊ូតុង Paste នៅខាងក្នុង */
+        .input-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        /* ប្រអប់ Input សម្រាប់ដាក់ Link */
+        .input-box { 
+            width: 100%; 
+            padding: 14px 110px 14px 16px; /* បន្ថែម padding ខាងស្តាំដើម្បីកុំឱ្យប៊ូតុង Pasteបាំងអត្ថបទ */
+            border: 1px solid #ccc; 
+            border-radius: 8px; 
+            font-size: 15px; 
+            outline: none; 
+            font-family: 'Khmer OS Siemreap', sans-serif;
+            transition: border-color 0.2s;
+        }
+        .input-box:focus {
+            border-color: #2563eb;
+        }
+
+        /* ប៊ូតុង Paste នៅខាងស្តាំក្នុងប្រអប់ Input */
+        .paste-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #f1f3f5;
+            border: 1px solid #dcedc8;
+            color: #333;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background 0.2s, color 0.2s;
+            font-family: 'Khmer OS Siemreap', sans-serif;
+        }
+        .paste-btn:hover {
+            background: #e2e6ea;
+            color: #00b074;
+        }
+
+        /* ប៊ូតុង Download ស្ថិតនៅពីក្រោមប្រអប់ Input ចមកណ្តាល */
+        button.main-btn { 
+            background: #2563eb; 
+            color: white; 
+            border: none; 
+            padding: 14px 30px; 
+            font-size: 16px; 
+            font-weight: bold;
+            border-radius: 8px; 
+            cursor: pointer; 
+            width: 100%;
+            font-family: 'Khmer OS Siemreap', sans-serif;
+            transition: background 0.2s;
+        }
+        button.main-btn:hover { background: #1d4ed8; }
+
+        #result { margin-top: 25px; text-align: left; }
         .media-grid { display: flex; flex-direction: column; gap: 20px; margin-top: 15px; }
         .media-card { background: #fafafa; border: 1px solid #e1e1e1; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .media-card img, .media-card video { max-width: 100%; max-height: 400px; border-radius: 6px; margin-bottom: 12px; object-fit: contain; }
-        .download-btn { background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block; font-size: 14px; font-weight: bold; width: 100%; transition: background 0.2s; }
-        .download-btn:hover { background: #218838; }
-        .success-text { color: #28a745; font-weight: bold; text-align: center; margin-bottom: 10px; }
+        .download-btn { background: #00b074; color: white; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block; font-size: 15px; font-weight: bold; width: 100%; transition: background 0.2s; font-family: 'Khmer OS Siemreap', sans-serif; }
+        .download-btn:hover { background: #009662; }
+        .success-text { color: #00b074; font-weight: bold; text-align: center; margin-bottom: 10px; }
+
+        /* Media Query សម្រាប់ទូរស័ព្ទដៃ (Screen width ក្រោម 768px) */
+        @media (max-width: 768px) {
+            .navbar .menu-links {
+                display: none; /* លាក់ Menu ធម្មតាចេញ */
+            }
+            .menu-toggle {
+                display: flex; /* បង្ហាញសញ្ញាបន្ទាត់បីជំនួសវិញ */
+            }
+            .dropdown-menu.active {
+                display: block; /* បង្ហាញ Menu ពេលចុច */
+            }
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Instagram Downloader</h2>
-    <p>បិទភ្ជាប់តំណភ្ជាប់ (Link) Instagram ទីនេះ</p>
-    <input type="text" id="instaLink" placeholder="https://www.instagram.com/p/... ឬ /reel/...">
-    <br>
-    <button class="main-btn" onclick="downloadMedia()">ទាញយក (Download)</button>
+<!-- Menu Bar ពណ៌បៃតង -->
+<div class="navbar">
+    <div class="logo">
+        📥 SaveInstagram.com
+    </div>
     
-    <div id="result"></div>
+    <!-- Menu ធម្មតាសម្រាប់កុំព្យូទ័រ -->
+    <div class="menu-links">
+        <a href="#">Home</a>
+        <a href="#">Download Instagram Video</a>
+        <a href="#">Help</a>
+    </div>
+
+    <!-- ប៊ូតុងសញ្ញាបន្ទាត់បី សម្រាប់ទូរស័ព្ទដៃ -->
+    <button class="menu-toggle" onclick="toggleMenu()" aria-label="Toggle Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- Dropdown Menu សម្រាប់ទូរស័ព្ទដៃពេលចុច -->
+    <div class="dropdown-menu" id="dropdownMenu">
+        <a href="#">Home</a>
+        <a href="#">Download Instagram Video</a>
+        <a href="#">Help</a>
+    </div>
+</div>
+
+<!-- Phần Nội dungหลัก -->
+<div class="main-wrapper">
+    <div class="container">
+        <h2>📥 Instagram Video Downloader</h2>
+        <p class="sub-text">Paste your Instagram Image link or Reel below</p>
+        
+        <!-- ប្រអប់ Input ជាមួយប៊ូតុង Paste នៅខាងក្នុង -->
+        <div class="input-container">
+            <input type="text" id="instaLink" class="input-box" placeholder="https://www.instagram.com/p/... or /reel/...">
+            <button class="paste-btn" onclick="pasteLink()">📋 Paste</button>
+        </div>
+        
+        <!-- ប៊ូតុង Download ស្ថិតនៅខាងក្រោមចំកណ្តាល -->
+        <button class="main-btn" onclick="downloadMedia()">Download</button>
+        
+        <div id="result"></div>
+    </div>
 </div>
 
 <script>
+// បើក/បិទ Menu ពេលស្ថិតលើទូរស័ព្ទដៃ
+function toggleMenu() {
+    const menu = document.getElementById('dropdownMenu');
+    menu.classList.toggle('active');
+}
+
+// បិទ Menu វិញពេលចុចលើកន្លែងផ្សេង
+window.onclick = function(event) {
+    if (!event.target.closest('.menu-toggle') && !event.target.closest('.dropdown-menu')) {
+        const menu = document.getElementById('dropdownMenu');
+        if (menu && menu.classList.contains('active')) {
+            menu.classList.remove('active');
+        }
+    }
+}
+
+// មុខងារ Paste Link ចូលទៅក្នុងប្រអប់ Input ដោយស្វ័យប្រវត្តិ
+async function pasteLink() {
+    try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById('instaLink').value = text;
+    } catch (err) {
+        alert('Please allow clipboard access (Paste) or use Ctrl+V instead!');
+    }
+}
+
 async function downloadMedia() {
     const url = document.getElementById('instaLink').value;
     const resultDiv = document.getElementById('result');
     
     if (!url) {
-        alert('សូមបញ្ចូល Link ជាមុនសិន!');
+        alert('Please insert your Link!');
         return;
     }
 
-    resultDiv.innerHTML = "<p style='text-align: center;'>កំពុងដំណើរការទិន្នន័យ... សូមរង់ចាំបន្តិច។</p>";
+    resultDiv.innerHTML = "<p style='text-align: center; color: #666;'>Processing... Please wait!</p>";
 
     try {
         const response = await fetch('https://instagram-downloader-9lxf.onrender.com/api/download', {
@@ -54,7 +316,7 @@ async function downloadMedia() {
 
         if (data.success) {
             const rawData = data.data;
-            const postName = data.caption || "instagram_media"; // ឈ្មោះដែលបានស្រង់ចេញពី Link (Shortcode)
+            const postName = data.caption || "instagram_media"; 
             let mediaArray = [];
 
             if (rawData && rawData.media && Array.isArray(rawData.media)) {
@@ -66,7 +328,7 @@ async function downloadMedia() {
             }
 
             if (mediaArray.length > 0) {
-                let htmlContent = `<p class="success-text">រកឃើញមេឌៀចំនួន ${mediaArray.length} ក្នុង Post នេះ!</p>`;
+                let htmlContent = `<p class="success-text">Result ${mediaArray.length} from your link</p>`;
                 htmlContent += `<div class="media-grid">`;
                 
                 mediaArray.forEach((item, index) => {
@@ -75,19 +337,18 @@ async function downloadMedia() {
                     if (item.video_url) mediaUrl = item.video_url;
 
                     let fileExtension = isVideo ? 'mp4' : 'jpg';
-                    // ដាក់ឈ្មោះតាម Shortcode របស់ Post ជាប់ជាមួយលេខរៀង
                     let fileName = `${postName}_${index + 1}.${fileExtension}`;
 
                     htmlContent += `
                         <div class="media-card">
-                            <p style="margin-top:0; font-weight:bold; color:#555;">ឯកសារ ទី ${index + 1}</p>
+                            <p style="margin-top:0; font-weight:bold; color:#555;">Media ${index + 1}</p>
                             ${isVideo ? 
                                 `<video width="100%" controls src="${mediaUrl}"></video>` : 
                                 `<img src="${mediaUrl}" alt="Instagram Image ${index + 1}">`
                             }
                             <br>
                             <button class="download-btn" onclick="forceDownload('${mediaUrl}', '${fileName}')">
-                                📥 Download ឯកសារទី ${index + 1}
+                                📥 Download Media ${index + 1}
                             </button>
                         </div>
                     `;
@@ -96,14 +357,14 @@ async function downloadMedia() {
                 htmlContent += `</div>`;
                 resultDiv.innerHTML = htmlContent;
             } else {
-                resultDiv.innerHTML = `<p style="color: red; text-align: center;">រកមិនឃើញមេឌៀក្នុង Link នេះទេ។</p>`;
+                resultDiv.innerHTML = `<p style="color: red; text-align: center;">There is no Image or Video from this link.</p>`;
             }
         } else {
-            resultDiv.innerHTML = `<p style="color: red; text-align: center;">កំហុស៖ ${data.message}</p>`;
+            resultDiv.innerHTML = `<p style="color: red; text-align: center;">Wrong៖ ${data.message}</p>`;
         }
     } catch (error) {
         console.error(error);
-        resultDiv.innerHTML = `<p style="color: red; text-align: center;">មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់សឺវើ (Server)។</p>`;
+        resultDiv.innerHTML = `<p style="color: red; text-align: center;">Can not connect to the server.</p>`;
     }
 }
 
