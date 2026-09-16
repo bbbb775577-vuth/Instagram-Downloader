@@ -59,6 +59,33 @@ app.post('/api/download', async (req, res) => {
     try {
         const response = await axios.request(options);
         
+        // ស្វែងរក Caption ឬ ចំណងជើងពី API Response (អាស្រ័យលើ struct វាអាចស្ថិតក្នុង caption ឬ title)
+        let caption = response.data.caption || response.data.title || response.data.description || "instagram_download";
+        
+        // សម្អាតអក្សរពិសេសៗចេញពីចំណងជើង ដើម្បីកុំឱ្យមានបញ្ហាពេលตั้งជាឈ្មោះឯកសារក្នុងកុំព្យូទ័រ
+        caption = caption.replace(/[\/\\?%*:|"<>]/g, '').trim();
+        if (caption.length > 50) {
+            caption = caption.substring(0, 50); // កាត់តម្រឹមឱ្យខ្លីល្មម កុំឱ្យវែងពេក
+        }
+
+        res.json({
+            success: true,
+            caption: caption, // ផ្ញើចំណងជើងទៅ Frontend
+            data: response.data
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.json({
+            success: false,
+            message: "មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Instagram។"
+        });
+    }
+});
+
+    try {
+        const response = await axios.request(options);
+        
         const mediaList = response.data.media || response.data.url || response.data;
         let directDownloadUrl = "";
 
