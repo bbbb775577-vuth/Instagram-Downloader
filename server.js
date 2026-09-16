@@ -11,37 +11,45 @@ app.post('/api/download', async (req, res) => {
     const instaUrl = req.body.url;
 
     try {
-        // វិធីទី១៖ អ្នកអាចប្រើប្រាស់ Third-party API ដែលមានស្រាប់សម្រាប់ Instagram Scraping (ឧទាហរណ៍ RapidAPI ណាមួយ)
-        // វិធីទី២៖ សរសេរកូដកាយរើសយក Direct Link (ចំណាំ៖ Instagram ມັກប្តូរโครงสร้าง HTML ធ្វើឱ្យកូដងាយខូច ទាមទារការអាប់ដេតញឹកញាប់)
-
-        // ឧទាហរណ៍នៃការប្រើប្រាស់ RapidAPI (Instagram Downloader API)
-        /*
+        // កូដសម្រាប់ហៅ RapidAPI (Instagram Downloader)
         const options = {
             method: 'GET',
-            url: 'https://instagram-downloader-download-instagram-videos-stories1.p.rapidapi.com/get-info',
+            url: 'https://instagram-dl1.p.rapidapi.com/dl', // (ប្តូរតាម API ដែលអ្នកជ្រើសរើសនៅលើ RapidAPI)
             params: { url: instaUrl },
             headers: {
-                'X-RapidAPI-Key': 'API_KEY_របស់_คุณ',
-                'X-RapidAPI-Host': '...'
+                'X-RapidAPI-Key': 'បញ្ចូល_API_KEY_របស់អ្នកនៅទីនេះ',
+                'X-RapidAPI-Host': 'instagram-dl1.p.rapidapi.com' // (ប្តូរតាម API នោះដែរ)
             }
         };
-        const apiResponse = await axios.request(options);
-        */
 
-        // តេស្តបង្ហាញលទ្ធផលត្រឡប់ទៅ Front-end វិញ
-        res.json({
-            success: true,
-            downloadUrl: " LINK_សម្រាប់_DOWNLOAD_ដែលទាញបាន "
-        });
+        const response = await axios.request(options);
+        
+        // ស្រង់យក Link សម្រាប់ Download ចេញពីលទ្ធផល API នោះ
+        // (ចំណាំ៖ ទម្រង់ data អាចខុសគ្នាបន្តិចបន្តួច អាស្រ័យលើ API នីមួយៗដែលអ្នកប្រើ)
+        const downloadLink = response.data.url || response.data.download_url; 
+
+        if (downloadLink) {
+            res.json({
+                success: true,
+                downloadUrl: downloadLink
+            });
+        } else {
+            res.json({
+                success: false,
+                message: "រកមិនឃើញតំណទាញយកសម្រាប់វីដេអូនេះទេ។"
+            });
+        }
 
     } catch (error) {
+        console.error(error);
         res.json({
             success: false,
-            message: "មិនអាចទាញយកវីដេអូនេះបានទេ សូមពិនិត្យ Link ឡើងវិញ។"
+            message: "មានបញ្ហាក្នុងការទាញយក សូមពិនិត្យមើល Link Instagram ឡើងវិញ។"
         });
     }
 });
 
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
