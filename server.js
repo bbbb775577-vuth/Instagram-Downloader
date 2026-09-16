@@ -1,14 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const axios = require('axios'); // ត្រូវធានាថាបាន cài axios (npm install axios)
+const axios = require('axios');
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
 app.post('/api/download', async (req, res) => {
-    const userInstagramUrl = req.body.url; // Link ដែល User វាយបញ្ចូលក្នុង Frontend
+    const userInstagramUrl = req.body.url;
 
     if (!userInstagramUrl) {
         return res.json({ success: false, message: "សូមបញ្ចូល Link Instagram!" });
@@ -17,9 +17,7 @@ app.post('/api/download', async (req, res) => {
     const options = {
         method: 'GET',
         url: 'https://instagram-downloader-download-instagram-stories-videos4.p.rapidapi.com/convert',
-        params: {
-            url: userInstagramUrl // យក Link ដែល User ផ្ញើមកដាក់បញ្ចូលទីនេះស្វ័យប្រវត្តិ
-        },
+        params: { url: userInstagramUrl },
         headers: {
             'x-rapidapi-key': '54fb74925dmsh8e15526f336a480p1844d4jsn86f649cc2db6',
             'x-rapidapi-host': 'instagram-downloader-download-instagram-stories-videos4.p.rapidapi.com'
@@ -29,12 +27,30 @@ app.post('/api/download', async (req, res) => {
     try {
         const response = await axios.request(options);
         
-        // ផ្អែកលើ Response structure របស់ API នេះ វាអាចស្ថិតក្នុង response.data 
-        // យើងនឹងສົ່ງទិន្នន័យនេះត្រឡប់ទៅឱ្យ Frontend វិញ
-        res.json({
-            success: true,
-            data: response.data
-        });
+        // ទាញយក URL វីដេអូ/រូបភាពពី Response structure របស់ API នេះ
+        // (អាស្រ័យលើ API វាអាចស្ថិតក្នុង response.data.media[0].t ឬ response.data.url)
+        const mediaList = response.data.media || response.data.url || response.data;
+        let directDownloadUrl = "";
+
+        if (Array.isArray(mediaList) && mediaList.length > 0) {
+            directDownloadUrl = mediaList[0].t || mediaList[0].url;
+        } else if (typeof response.data === 'string') {
+            directDownloadUrl = response.data;
+        } else {
+            directDownloadUrl = response.data.url || response.data.download_url;
+        }
+
+        if (directDownloadUrl) {
+            res.json({
+                success: true,
+                downloadUrl: directDownloadUrl // ផ្ញើឈ្មោះ downloadUrl ឱ្យត្រូវនឹង Frontend
+            });
+        } else {
+            res.json({
+                success: false,
+                message: "រកមិនឃើញតំណទាញយកសម្រាប់ Link นี้ទេ។"
+            });
+        }
 
     } catch (error) {
         console.error(error);
