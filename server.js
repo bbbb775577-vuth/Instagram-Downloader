@@ -7,7 +7,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// បន្ថែម Route នេះ ដើម្បីកុំឱ្យវាចេញ Cannot GET / ពេលបើក Link Server
+// Route សម្រាប់ពិនិត្យមើលស្ថានភាព Server
 app.get('/', (req, res) => {
     res.send('Instagram Downloader API is running successfully!');
 });
@@ -32,18 +32,38 @@ app.post('/api/download', async (req, res) => {
     try {
         const response = await axios.request(options);
         
-        // ស្វែងរក Caption ឬ ចំណងជើងពី API Response (អាស្រ័យលើ struct វាអាចស្ថិតក្នុង caption ឬ title)
-        let caption = response.data.caption || response.data.title || response.data.description || "instagram_download";
+        // ព្យាយាមទាញយកចំណងជើងពីគ្រប់ Key ដែលអាចមាននៅក្នុង API Response របស់ RapidAPI
+        let rawCaption = response.data.caption || 
+                         response.data.title || 
+                         response.data.description || 
+                         response.data.text || 
+                         response.data.message || 
+                         "instagram_download";
+
+        // ករណីដែលទិន្នន័យស្ថិតក្នុង Object ខាងក្នុង (nested data)
+        if (rawCaption === "instagram_download" && response.data.data) {
+            rawCaption = response.data.data.caption || 
+                         response.data.data.title || 
+                         response.data.data.description || 
+                         "instagram_download";
+        }
+
+        // សម្អាតអក្សរពិសេសៗ និងសញ្ញាផ្កាយ/ហែសថេ็กចេញពីចំណងជើង ដើម្បីកុំឱ្យមានបញ្ហាពេលตั้งជាឈ្មោះ File
+        let caption = rawCaption.replace(/[\/\\?%*:|"<>#@]/g, '').trim();
         
-        // សម្អាតអក្សរពិសេសៗចេញពីចំណងជើង ដើម្បីកុំឱ្យមានបញ្ហាពេលตั้งជាឈ្មោះឯកសារក្នុងកុំព្យូទ័រ
-        caption = caption.replace(/[\/\\?%*:|"<>]/g, '').trim();
-        if (caption.length > 50) {
-            caption = caption.substring(0, 50); // កាត់តម្រឹមឱ្យខ្លីល្មម កុំឱ្យវែងពេក
+        // កាត់តម្រឹមឱ្យខ្លីល្មម (ប្រហែល 40 តួអក្សរ) មិនឱ្យវែងពេក
+        if (caption.length > 40) {
+            caption = caption.substring(0, 40).trim();
+        }
+        
+        // ប្រសិនបើសម្អាតរួចហើយគ្មានអក្សរเหลือ គឺកំណត់ឈ្មោះទូទៅវិញ
+        if (!caption || caption === "") {
+            caption = "instagram_media";
         }
 
         res.json({
             success: true,
-            caption: caption, // ផ្ញើចំណងជើងទៅ Frontend
+            caption: caption, // ផ្ញើចំណងជើងដែលចាប់បានទៅ Frontend
             data: response.data
         });
 
