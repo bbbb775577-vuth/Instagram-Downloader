@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Video & Image Downloader</title>
+    <style>
+        body { font-family: 'Khmer OS Siemreap', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
+        input[type="text"] { width: 80%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; margin-bottom: 15px; }
+        button { background: #0095f6; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 6px; cursor: pointer; }
+        button:hover { background: #0077cc; }
+        #result { margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Instagram Downloader</h2>
+    <p>បិទភ្ជាប់តំណភ្ជាប់ (Link) Instagram ទីនេះ</p>
+    <input type="text" id="instaLink" placeholder="https://www.instagram.com/p/... ឬ /reel/...">
+    <br>
+    <button onclick="downloadMedia()">ទាញយក (Download)</button>
+    
+    <div id="result"></div>
+</div>
+
+<script>
+async function downloadMedia() {
+    const url = document.getElementById('instaLink').value;
+    const resultDiv = document.getElementById('result');
+    
+    if (!url) {
+        alert('សូមបញ្ចូល Link ជាមុនសិន!');
+        return;
+    }
+
+    resultDiv.innerHTML = "កំពុងដំណើរការ... សូមរង់ចាំបន្តិច។";
+
+    try {
+        // ផ្ញើ Link ទៅកាន់ Back-end របស់អ្នក (Node.js/Express)
+        const response = await fetch('/api/download', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: url })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            resultDiv.innerHTML = `
+                <p>ទាញយកបានสำเร็จ!</p>
+                <a href="${data.downloadUrl}" target="_blank" download>
+                    <button style="background: #28a745;">ចុចទីនេះដើម្បី Download</button>
+                </a>
+            `;
+        } else {
+            resultDiv.innerHTML = `<p style="color: red;">កំហុស៖ ${data.message}</p>`;
+        }
+    } catch (error) {
+        resultDiv.innerHTML = `<p style="color: red;">មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់เซิร์ฟเวอร์។</p>`;
+    }
+}
+</script>
+
+</body>
+</html>
