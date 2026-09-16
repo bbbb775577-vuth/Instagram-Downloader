@@ -7,7 +7,6 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Route សម្រាប់ពិនិត្យមើលស្ថានភាព Server
 app.get('/', (req, res) => {
     res.send('Instagram Downloader API is running successfully!');
 });
@@ -17,6 +16,20 @@ app.post('/api/download', async (req, res) => {
 
     if (!userInstagramUrl) {
         return res.json({ success: false, message: "សូមបញ្ចូល Link Instagram!" });
+    }
+
+    // ស្រង់យក Shortcode (ID របស់ Post) ពី Link Instagram មកធ្វើជាឈ្មោះ File តែម្តង
+    let shortcode = "instagram_media";
+    try {
+        const urlObj = new URL(userInstagramUrl);
+        const pathSegments = urlObj.pathname.split('/').filter(Boolean);
+        // Path របស់ Instagram  সাধারণতមានลักษณะ /p/SHORTCODE/ ឬ /reel/SHORTCODE/
+        const index = pathSegments.findIndex(seg => seg === 'p' || seg === 'reel' || seg === 'tv');
+        if (index !== -1 && pathSegments[index + 1]) {
+            shortcode = pathSegments[index + 1];
+        }
+    } catch (e) {
+        // ករណី Link មិនប្រក្រតី គឺប្រើឈ្មោះទូទៅ
     }
 
     const options = {
@@ -31,39 +44,10 @@ app.post('/api/download', async (req, res) => {
 
     try {
         const response = await axios.request(options);
-        
-        // ព្យាយាមទាញយកចំណងជើងពីគ្រប់ Key ដែលអាចមាននៅក្នុង API Response របស់ RapidAPI
-        let rawCaption = response.data.caption || 
-                         response.data.title || 
-                         response.data.description || 
-                         response.data.text || 
-                         response.data.message || 
-                         "instagram_download";
-
-        // ករណីដែលទិន្នន័យស្ថិតក្នុង Object ខាងក្នុង (nested data)
-        if (rawCaption === "instagram_download" && response.data.data) {
-            rawCaption = response.data.data.caption || 
-                         response.data.data.title || 
-                         response.data.data.description || 
-                         "instagram_download";
-        }
-
-        // សម្អាតអក្សរពិសេសៗ និងសញ្ញាផ្កាយ/ហែសថេ็กចេញពីចំណងជើង ដើម្បីកុំឱ្យមានបញ្ហាពេលตั้งជាឈ្មោះ File
-        let caption = rawCaption.replace(/[\/\\?%*:|"<>#@]/g, '').trim();
-        
-        // កាត់តម្រឹមឱ្យខ្លីល្មម (ប្រហែល 40 តួអក្សរ) មិនឱ្យវែងពេក
-        if (caption.length > 40) {
-            caption = caption.substring(0, 40).trim();
-        }
-        
-        // ប្រសិនបើសម្អាតរួចហើយគ្មានអក្សរเหลือ គឺកំណត់ឈ្មោះទូទៅវិញ
-        if (!caption || caption === "") {
-            caption = "instagram_media";
-        }
 
         res.json({
             success: true,
-            caption: caption, // ផ្ញើចំណងជើងដែលចាប់បានទៅ Frontend
+            caption: shortcode, // យក Shortcode មកធ្វើជាឈ្មោះ
             data: response.data
         });
 
