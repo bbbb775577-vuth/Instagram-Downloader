@@ -1294,25 +1294,7 @@ async function downloadMedia() {
                     let isVideo = item.type === 'video' || (mediaUrl && (mediaUrl.includes('.mp4') || mediaUrl.includes('video')));
 
                     let fileExtension = isVideo ? 'mp4' : 'jpg';
-
-// --- កូដសម្អាត Caption ឱ្យក្លាយជាឈ្មោះ File ដែលស្អាត និងសុវត្ថិភាព ---
-let cleanCaption = postName
-    .replace(/[^\w\s-_]/gi, '') // លុបសញ្ញា Emoji និងសញ្ញារញ៉េរញ៉ៃចេញ
-    .trim()
-    .replace(/\s+/g, '_');      // ដូរចន្លោះទទេ (Spaces) ឱ្យទៅជាសញ្ញា underscore (_)
-
-// កាត់យកត្រឹមតែ ៤០ តួអក្សរដំបូង ដើម្បីកុំឱ្យឈ្មោះវែងពេក
-if (cleanCaption.length > 40) {
-    cleanCaption = cleanCaption.substring(0, 40);
-}
-
-// បើ caption ទទេ ឱ្យវាប្រើឈ្មោះ Instagram_Media ជំនួស
-if (!cleanCaption || cleanCaption === "") {
-    cleanCaption = "Instagram_Media";
-}
-
-let fileName = `${cleanCaption}_${index + 1}.${fileExtension}`;
-// ----------------------------------------------------
+                    let fileName = `${postName}_${index + 1}.${fileExtension}`;
 
                     htmlContent += `
                         <div class="media-card">
