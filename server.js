@@ -29,31 +29,30 @@ app.post('/api/download', async (req, res) => {
         }
     } catch (e) {}
 
-    // កំណត់តម្លៃតាម Code snippet ពិតប្រាកដរបស់ RapidAPI (GET Method + Params)
-const options = {
+    // កំណត់តម្លៃតាម Code snippet ថ្មីដែលដំណើរការបានល្អ
+    const options = {
         method: 'GET',
-        url: 'https://instagram-tiktok-youtube-downloader.p.rapidapi.com/fetch',
+        url: 'https://instagram-downloader-reels-photos-stories-albums.p.rapidapi.com/instagram',
         params: {
             url: userInstagramUrl
         },
         headers: {
             'x-rapidapi-key': '54fb74925dmsh8e15526f336a480p1844d4jsn86f649cc2db6',
-            'x-rapidapi-host': 'instagram-tiktok-youtube-downloader.p.rapidapi.com'
+            'x-rapidapi-host': 'instagram-downloader-reels-photos-stories-albums.p.rapidapi.com',
+            'X-API-Key': '{}'
         },
-        timeout: 15000 // ⏱️ កំណត់ឱ្យវា等待រង់ចាំរហូតដល់ ១៥វិនាទី មុននឹងវាាច់ការតភ្ជាប់
+        timeout: 15000 // កំណត់ម៉ោងរង់ចាំ ១៥វីនាទី ដើម្បីការពារបញ្ហា fetch.failed ពេល සឺវើ Sleep
     };
 
-try {
+    try {
         const response = await axios.request(options);
         
         if (!response.data) {
             return res.json({ success: false, message: "No data received from API." });
         }
 
-        // ព្យាយាមទាញយក Caption ឬ Title ពី Response របស់ API
+        // ព្យាយាមទាញយក Caption ឬ Title ពី Response របស់ API ថ្មី
         let apiCaption = response.data.caption || response.data.title || response.data.description || "";
-
-        // បើ API មិនមានផ្ញើ caption មកទេ យើងទើបប្រើ shortcode ជំនួស
         let finalCaption = apiCaption ? apiCaption : shortcode;
 
         res.json({
@@ -69,8 +68,6 @@ try {
             message: "Error fetching data from Instagram or API quota exceeded."
         });
     }
-    // ==========================================
-
 });
 
 const PORT = process.env.PORT || 3000;
