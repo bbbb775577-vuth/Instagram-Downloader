@@ -1274,13 +1274,14 @@ async function downloadMedia() {
             const postName = data.caption || "instagram_media"; 
             let mediaArray = [];
 
-// បន្ថែម rawData.result ព្រោះ API ថ្មីដាក់ទិន្នន័យក្នុង result
-            if (rawData.result && Array.isArray(rawData.result)) {
-                mediaArray = rawData.result;
-            } else if (Array.isArray(rawData)) {
+if (Array.isArray(rawData)) {
                 mediaArray = rawData;
+            } else if (rawData.result && Array.isArray(rawData.result)) {
+                mediaArray = rawData.result;
             } else if (rawData.data && Array.isArray(rawData.data)) {
                 mediaArray = rawData.data;
+            } else if (rawData.medias && Array.isArray(rawData.medias)) {
+                mediaArray = rawData.medias;
             } else if (rawData.url || rawData.download_url || rawData.link || rawData.u) {
                 mediaArray = [rawData];
             }
