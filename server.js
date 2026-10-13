@@ -29,7 +29,7 @@ app.post('/api/download', async (req, res) => {
         }
     } catch (e) {}
 
-    // កំណត់តម្លៃតាម Code snippet ថ្មីដែលដំណើរការបានល្អ
+    // កំណត់តម្លៃ options ថ្មី (បានលុប 'X-API-Key': '{}' ចออกរួចរាល់)
     const options = {
         method: 'GET',
         url: 'https://instagram-downloader-reels-photos-stories-albums.p.rapidapi.com/instagram',
@@ -38,15 +38,17 @@ app.post('/api/download', async (req, res) => {
         },
         headers: {
             'x-rapidapi-key': '54fb74925dmsh8e15526f336a480p1844d4jsn86f649cc2db6',
-            'x-rapidapi-host': 'instagram-downloader-reels-photos-stories-albums.p.rapidapi.com',
-            'X-API-Key': '{}'
+            'x-rapidapi-host': 'instagram-downloader-reels-photos-stories-albums.p.rapidapi.com'
         },
-        timeout: 15000 // កំណត់ម៉ោងរង់ចាំ ១៥វីនាទី ដើម្បីការពារបញ្ហា fetch.failed ពេល සឺវើ Sleep
+        timeout: 15000 // កំណត់ម៉ោងរង់ចាំ ១៥វិនាទី ដើម្បីការពារបញ្ហា fetch.failed ពេលសឺវើ Sleep
     };
 
     try {
         const response = await axios.request(options);
         
+        // 🔍 បន្ថែមការ Print មើល Data ក្នុង Render Logs ដើម្បីងាយស្រួលឆែកមើល
+        console.log("API Response Data:", JSON.stringify(response.data, null, 2));
+
         if (!response.data) {
             return res.json({ success: false, message: "No data received from API." });
         }
