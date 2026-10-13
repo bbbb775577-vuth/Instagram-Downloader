@@ -33,13 +33,14 @@ app.post('/api/download', async (req, res) => {
         }
     } catch (e) {}
 
+    // កែសម្រួលទាំង URL និង Host ឱ្យប្រាកដថាប្រើលេខ 1 ដូចគ្នា
     const options = {
         method: 'GET',
         url: 'https://instagram-downloader-download-instagram-stories-videos1.p.rapidapi.com/convert',
         params: { url: userInstagramUrl },
         headers: {
             'x-rapidapi-key': '54fb74925dmsh8e15526f336a480p1844d4jsn86f649cc2db6',
-            'x-rapidapi-host': 'instagram-downloader-download-instagram-videos-stories1.p.rapidapi.com'
+            'x-rapidapi-host': 'instagram-downloader-download-instagram-stories-videos1.p.rapidapi.com'
         }
     };
 
