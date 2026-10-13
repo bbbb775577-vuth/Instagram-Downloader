@@ -8,30 +8,36 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
-    res.send('Instagram Downloader API is running successfully!');
+    res.downloadstagram('Instagram Downloader API is running successfully!');
 });
 
 app.post('/api/download', async (req, res) => {
-    const userInstagramUrl = req.body.url;
+    let userInstagramUrl = req.body.url;
 
     if (!userInstagramUrl) {
-        return res.json({ success: false, message: "សូមបញ្ចូល Link Instagram!" });
+        return res.json({ success: false, message: "Please enter an Instagram Link!" });
     }
 
-    // ស្រង់យក Shortcode (ID របស់ Post) ពី Link Instagram មកធ្វើជាឈ្មោះ File តែម្តង
+    // សម្អាត URL ឱ្យស្អាត (លុបទុករាល់ Query parameters ខាងក្រោយដូចជា ?hl=en&img_index=1 ជៀសវាង API Error)
+    try {
+        const cleanUrlObj = new URL(userInstagramUrl);
+        userInstagramUrl = `${cleanUrlObj.origin}${cleanUrlObj.pathname}`;
+    } catch (e) {
+        // បើ URL ខុសទម្រង់ គឺទុកប្រើធម្មតា
+    }
+
+    // ស្រង់យក Shortcode ទុកធ្វើជាឈ្មោះ File สำรอง
     let shortcode = "instagram_media";
     try {
         const urlObj = new URL(userInstagramUrl);
         const pathSegments = urlObj.pathname.split('/').filter(Boolean);
-        // Path របស់ Instagram  সাধারণতមានลักษณะ /p/SHORTCODE/ ឬ /reel/SHORTCODE/
         const index = pathSegments.findIndex(seg => seg === 'p' || seg === 'reel' || seg === 'tv');
         if (index !== -1 && pathSegments[index + 1]) {
             shortcode = pathSegments[index + 1];
         }
-    } catch (e) {
-        // ករណី Link មិនប្រក្រតី គឺប្រើឈ្មោះទូទៅ
-    }
+    } catch (e) {}
 
+    // ប្រើប្រាស់ RapidAPI Endpoint ថ្មីដែលមានស្ថេរភាព
     const options = {
         method: 'GET',
         url: 'https://instagram-downloader-download-instagram-stories-videos4.p.rapidapi.com/convert',
@@ -44,18 +50,23 @@ app.post('/api/download', async (req, res) => {
 
     try {
         const response = await axios.request(options);
+        
+        // ឆែកមើលទិន្នន័យដែលឆ្លើយតបមក
+        if (!response.data) {
+            return res.json({ success: false, message: "No data received from API." });
+        }
 
         res.json({
             success: true,
-            caption: shortcode, // យក Shortcode មកធ្វើជាឈ្មោះ
+            caption: shortcode,
             data: response.data
         });
 
     } catch (error) {
-        console.error(error);
+        console.error("API Error:", error.response?.data || error.message);
         res.json({
             success: false,
-            message: "មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Instagram។"
+            message: "Error fetching data from Instagram."
         });
     }
 });
