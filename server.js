@@ -42,22 +42,16 @@ app.post('/api/download', async (req, res) => {
         }
     };
 
-try {
+    try {
         const response = await axios.request(options);
         
         if (!response.data) {
             return res.json({ success: false, message: "No data received from API." });
         }
 
-        // ព្យាយាមទាញយក Caption ឬ Title ពី Response របស់ API
-        let apiCaption = response.data.caption || response.data.title || response.data.description || "";
-
-        // បើ API មិនមានផ្ញើ caption មកទេ យើងទើបប្រើ shortcode ជំនួស
-        let finalCaption = apiCaption ? apiCaption : shortcode;
-
         res.json({
             success: true,
-            caption: finalCaption,
+            caption: shortcode,
             data: response.data
         });
 
@@ -68,8 +62,6 @@ try {
             message: "Error fetching data from Instagram or API quota exceeded."
         });
     }
-    // ==========================================
-
 });
 
 const PORT = process.env.PORT || 3000;
