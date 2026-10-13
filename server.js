@@ -18,11 +18,7 @@ app.post('/api/download', async (req, res) => {
         return res.json({ success: false, message: "Please enter an Instagram Link!" });
     }
 
-    try {
-        const cleanUrlObj = new URL(userInstagramUrl);
-        userInstagramUrl = `${cleanUrlObj.origin}${cleanUrlObj.pathname}`;
-    } catch (e) {}
-
+    // ស្រង់យក Shortcode ទុកធ្វើជាឈ្មោះ File สำรอง
     let shortcode = "instagram_media";
     try {
         const urlObj = new URL(userInstagramUrl);
@@ -33,14 +29,17 @@ app.post('/api/download', async (req, res) => {
         }
     } catch (e) {}
 
-    // កែសម្រួលទាំង URL និង Host ឱ្យប្រាកដថាប្រើលេខ 1 ដូចគ្នា
+    // កំណត់តម្លៃតាមទម្រង់របស់ «Download All in One!» (POST Request)
     const options = {
-        method: 'GET',
-        url: 'https://instagram-downloader-download-instagram-stories-videos1.p.rapidapi.com/convert',
-        params: { url: userInstagramUrl },
+        method: 'POST',
+        url: 'https://instagram-downloader-download-instagram-videos-stories1.p.rapidapi.com/download', // ជំនួស Endpoint ឱ្យត្រូវនឹង Instagram
         headers: {
+            'content-type': 'application/json',
             'x-rapidapi-key': '54fb74925dmsh8e15526f336a480p1844d4jsn86f649cc2db6',
-            'x-rapidapi-host': 'instagram-downloader-download-instagram-stories-videos1.p.rapidapi.com'
+            'x-rapidapi-host': 'instagram-downloader-download-instagram-videos-stories1.p.rapidapi.com'
+        },
+        data: {
+            url: userInstagramUrl
         }
     };
 
