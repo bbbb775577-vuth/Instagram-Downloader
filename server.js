@@ -32,13 +32,13 @@ app.post('/api/download', async (req, res) => {
     // កំណត់តម្លៃតាម Code snippet ពិតប្រាកដរបស់ RapidAPI (GET Method + Params)
     const options = {
         method: 'GET',
-        url: 'https://instagram-downloader-download-instagram-videos-stories1.p.rapidapi.com/fetch',
+        url: 'https://instagram-tiktok-youtube-downloader.p.rapidapi.com/fetch',
         params: {
             url: userInstagramUrl
         },
         headers: {
             'x-rapidapi-key': '54fb74925dmsh8e15526f336a480p1844d4jsn86f649cc2db6',
-            'x-rapidapi-host': 'instagram-downloader-download-instagram-videos-stories1.p.rapidapi.com'
+            'x-rapidapi-host': 'instagram-tiktok-youtube-downloader.p.rapidapi.com'
         }
     };
 
