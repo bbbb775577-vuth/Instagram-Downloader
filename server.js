@@ -30,7 +30,7 @@ app.post('/api/download', async (req, res) => {
     } catch (e) {}
 
     // កំណត់តម្លៃតាម Code snippet ពិតប្រាកដរបស់ RapidAPI (GET Method + Params)
-    const options = {
+const options = {
         method: 'GET',
         url: 'https://instagram-tiktok-youtube-downloader.p.rapidapi.com/fetch',
         params: {
@@ -39,7 +39,8 @@ app.post('/api/download', async (req, res) => {
         headers: {
             'x-rapidapi-key': '54fb74925dmsh8e15526f336a480p1844d4jsn86f649cc2db6',
             'x-rapidapi-host': 'instagram-tiktok-youtube-downloader.p.rapidapi.com'
-        }
+        },
+        timeout: 15000 // ⏱️ កំណត់ឱ្យវា等待រង់ចាំរហូតដល់ ១៥វិនាទី មុននឹងវាាច់ការតភ្ជាប់
     };
 
 try {
