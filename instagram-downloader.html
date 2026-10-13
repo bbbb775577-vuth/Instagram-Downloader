@@ -1271,18 +1271,20 @@ async function downloadMedia() {
 
         if (data.success) {
             const rawData = data.data;
-            const postName = data.caption || "instagram_media"; 
+            const postName = data.caption || "Instagram_Media"; 
             let mediaArray = [];
 
-            // កែសម្រួលការទាញយក Array ឱ្យត្រូវនឹង JSON Response របស់ API ថ្មី
+            // ពង្រីកការចាប់យក Array និង Object ឱ្យកាន់តែទូលំទូលាយ (ទាំងរូបភាព និងវីដេអូ)
             if (Array.isArray(rawData)) {
                 mediaArray = rawData;
             } else if (rawData.data && Array.isArray(rawData.data)) {
                 mediaArray = rawData.data;
-            } else if (rawData.url || rawData.download_url || rawData.link) {
-                mediaArray = [rawData];
+            } else if (rawData.media && Array.isArray(rawData.media)) {
+                mediaArray = rawData.media;
             } else if (rawData.medias && Array.isArray(rawData.medias)) {
                 mediaArray = rawData.medias;
+            } else if (rawData.url || rawData.download_url || rawData.link || rawData.t) {
+                mediaArray = [rawData];
             }
 
             if (mediaArray.length > 0) {
@@ -1290,29 +1292,93 @@ async function downloadMedia() {
                 htmlContent += `<div class="media-grid">`;
                 
                 mediaArray.forEach((item, index) => {
-                    let mediaUrl = item.url || item.download_url || item.link || item.t;
-                    let isVideo = item.type === 'video' || (mediaUrl && (mediaUrl.includes('.mp4') || mediaUrl.includes('video')));
+                    let mediaUrl = item.url || item.download_url || item.link || item.t || item.image_url || item.video_url;
+                    
+                    // ឆែកមើលថាតើជាវីដេអូ ឬរូបភាព
+                    let isVideo = item.type === 'video' || 
+                                  (mediaUrl && (mediaUrl.includes('.mp4') || mediaUrl.includes('video') || mediaUrl.includes('.mov')));
 
                     let fileExtension = isVideo ? 'mp4' : 'jpg';
+                    let fileName = `Instagram_Media_${index + 1}.${fileExtension}`;
 
-// --- កូដសម្អាត Caption ឱ្យក្លាយជាឈ្មោះ File ដែលស្អាត និងសុវត្ថិភាព ---
-let cleanCaption = postName
-    .replace(/[^\w\s-_]/gi, '') // លុបសញ្ញា Emoji និងសញ្ញារញ៉េរញ៉ៃចេញ
-    .trim()
-    .replace(/\s+/g, '_');      // ដូរចន្លោះទទេ (Spaces) ឱ្យទៅជាសញ្ញា underscore (_)
+                    htmlContent += `
+                        <div class="media-card">
+                            <p style="margin-top:0; font-weight:bold; color:#555;">Media ${index + 1}</p>
+                            ${isVideo ? 
+                                `<video width="100%" controls src="${mediaUrl}"></video>` : 
+                                `<img src="${mediaUrl}" alt="Instagram Image ${index + 1}">`
+                            }
+                            <br>
+                            <button class="download-btn" onclick="forceDownload('${mediaUrl}', '${fileName}')">
+                                📥 Download Media ${index + 1}
+                            </button>
+                        </div>
+                    `;
+                });
 
-// កាត់យកត្រឹមតែ ៤០ តួអក្សរដំបូង ដើម្បីកុំឱ្យឈ្មោះវែងពេក
-if (cleanCaption.length > 40) {
-    cleanCaption = cleanCaption.substring(0, 40);
-}
+                htmlContent += `</div>`;
+                resultDiv.innerHTML = htmlContent;
+            } else {
+                resultDiv.innerHTML = `<p style="color: red; text-align: center;">There is no Image or Video from this link.</p>`;
+            }
+        } else {
+            resultDiv.innerHTML = `<p style="color: red; text-align: center;">Wrong៖ ${data.message}</p>`;
+        }
+    } catch (error) {
+        console.error(error);
+        resultDiv.innerHTML = `<p style="color: red; text-align: center;">Can not connect to the server.</p>`;
+    }
+}async function downloadMedia() {
+    const url = document.getElementById('instaLink').value;
+    const resultDiv = document.getElementById('result');
+    
+    if (!url) {
+        alert('Please insert your Link!');
+        return;
+    }
 
-// បើ caption ទទេ ឱ្យវាប្រើឈ្មោះ Instagram_Media ជំនួស
-if (!cleanCaption || cleanCaption === "") {
-    cleanCaption = "Instagram_Media";
-}
+    resultDiv.innerHTML = "<p style='text-align: center; color: #666;'>Processing... Please wait!</p>";
 
-let fileName = `${cleanCaption}_${index + 1}.${fileExtension}`;
-// ----------------------------------------------------
+    try {
+        const response = await fetch('https://instagram-downloader-9lxf.onrender.com/api/download', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: url })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const rawData = data.data;
+            const postName = data.caption || "Instagram_Media"; 
+            let mediaArray = [];
+
+            // ពង្រីកការចាប់យក Array និង Object ឱ្យកាន់តែទូលំទូលាយ (ទាំងរូបភាព និងវីដេអូ)
+            if (Array.isArray(rawData)) {
+                mediaArray = rawData;
+            } else if (rawData.data && Array.isArray(rawData.data)) {
+                mediaArray = rawData.data;
+            } else if (rawData.media && Array.isArray(rawData.media)) {
+                mediaArray = rawData.media;
+            } else if (rawData.medias && Array.isArray(rawData.medias)) {
+                mediaArray = rawData.medias;
+            } else if (rawData.url || rawData.download_url || rawData.link || rawData.t) {
+                mediaArray = [rawData];
+            }
+
+            if (mediaArray.length > 0) {
+                let htmlContent = `<p class="success-text">Result ${mediaArray.length} from your link</p>`;
+                htmlContent += `<div class="media-grid">`;
+                
+                mediaArray.forEach((item, index) => {
+                    let mediaUrl = item.url || item.download_url || item.link || item.t || item.image_url || item.video_url;
+                    
+                    // ឆែកមើលថាតើជាវីដេអូ ឬរូបភាព
+                    let isVideo = item.type === 'video' || 
+                                  (mediaUrl && (mediaUrl.includes('.mp4') || mediaUrl.includes('video') || mediaUrl.includes('.mov')));
+
+                    let fileExtension = isVideo ? 'mp4' : 'jpg';
+                    let fileName = `Instagram_Media_${index + 1}.${fileExtension}`;
 
                     htmlContent += `
                         <div class="media-card">
